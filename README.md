@@ -193,3 +193,8 @@ bun run generate.ts --order=3 --cite=0.15 --show=30   # Result 4 (reproduce Voyn
 *Data: Beinecke MS 408 (Yale, IIIF) and the Zandbergen–Landini transliteration
 (voynich.nu). Prior work built on: Currier (languages), Davis (scribal hands), Stolfi (word
 grammar), Rugg (table/grille), Timm & Schinner (self-citation).*
+
+
+
+For citations
+https://zenodo.org/records/21054988
