@@ -1,0 +1,16 @@
+{
+  "name": "skrypt",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@silvia-odwyer/photon-node": "^0.3.4",
+    "arktype": "^2.2.1"
+  }
+}
