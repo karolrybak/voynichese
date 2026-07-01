@@ -91,6 +91,18 @@ on the *previous character* (H2 ≈ 2.0) is far lower than conditioned on the *p
 word* (≈ 3.4). A positional table/grille (e.g. a Cardan grille over a syllable table) would
 predict the opposite. The data favour a **transition-based** word builder.
 
+**Device simulation.** We built a 3-ring "volvelle" generator — learn a prefix ring, a core
+ring and a suffix ring from the corpus, then assemble words by drawing each ring
+*independently* (a pure positional slot device, à la Rugg's grille). It **matches** word
+length (var/mean 0.75, exactly real) and the affix inventory (cosine 0.98/0.97) — but its
+character entropy is far too high (H2 2.78 vs real 2.15) and it invents nearly twice as many
+word types (type/token 0.41 vs 0.22): independent rings emit character transitions the
+manuscript never uses. A sequential order-3 Markov model, by contrast, matches H2 (2.16) and
+type/token (0.22). **Conclusion:** a simple free-window grille is insufficient; the device's
+rings must be *coupled* (geared, so one ring constrains the next) — the mechanical embodiment
+of the sequential structure. Medieval combinatorial wheels (Llull's *Ars Magna*) were exactly
+such geared concentric disks, and the manuscript itself draws volvelles (the rosette folios).
+
 ## 6. Result 4 — a two-mechanism generator reproduces Voynichese
 
 We trained an **order-3 character Markov** model on the corpus and sampled a synthetic corpus
@@ -188,6 +200,7 @@ bun run textstats.ts                            # Result 2 (signatures by hand &
 bun run wordstruct.ts                           # Result 3 (affix table, positional entropy)
 bun run compare.ts                              # §7 (calibration vs Latin/German/English; 3 transliterations)
 bun run generate.ts --order=3 --cite=0.15 --show=30   # Result 4 (reproduce Voynichese)
+bun run volvelle.ts                             # §5 device sim (independent rings insufficient → geared)
 ```
 
 *Data: Beinecke MS 408 (Yale, IIIF) and the Zandbergen–Landini transliteration

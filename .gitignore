@@ -8,6 +8,13 @@ out
 dist
 *.tgz
 
+# large / downloaded data (regenerate with analysis/download.ts + fetch-refs)
+ref
+ivtff
+Voynich_Manuscript.pdf
+analysis/generated.txt
+analysis/volvelle_out.txt
+
 # code coverage
 coverage
 *.lcov

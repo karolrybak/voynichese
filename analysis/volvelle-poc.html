@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Voynich Word-Wheel — a proof-of-concept generator</title>
+<style>
+  :root{
+    --ink:#3a2f23; --bg:#f4ecd8; --panel:#fbf6e9; --line:#c9b892;
+    --pre:#8c6d4a; --core:#6f8c5a; --suf:#7a5f8c; --win:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 Georgia,"Iowan Old Style",serif;}
+  header{padding:26px 24px 6px;text-align:center}
+  h1{margin:0;font-size:26px;letter-spacing:.3px}
+  .sub{opacity:.7;font-style:italic;margin-top:4px}
+  main{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;
+    align-items:flex-start;padding:18px 20px 40px;max-width:1180px;margin:0 auto}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:16px;box-shadow:0 2px 10px rgba(80,60,30,.08)}
+  .panel{flex:1 1 360px;min-width:320px}
+  svg{display:block;margin:0 auto}
+  .sector{font:600 15px/1 "Courier New",monospace;fill:var(--ink)}
+  .dim{opacity:.16}
+  .ringlabel{font:italic 12px Georgia,serif;fill:#8a7a5c}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  button{font:600 14px Georgia,serif;color:#fff;background:var(--ink);
+    border:0;border-radius:8px;padding:9px 14px;cursor:pointer}
+  button.alt{background:#6f8c5a}
+  button.step{padding:6px 11px;font-size:15px;background:#5b4a34}
+  .stepgrp{display:inline-flex;align-items:center;gap:4px;font-size:13px;
+    background:#efe6cf;border:1px solid var(--line);border-radius:8px;padding:4px 6px}
+  button:disabled{opacity:.5;cursor:default}
+  label.tog{display:inline-flex;align-items:center;gap:6px;font-size:13px;
+    background:#efe6cf;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+  .word{font:700 40px "Courier New",monospace;letter-spacing:1px;
+    min-height:52px;text-align:center;color:#2c2317;margin:6px 0}
+  .parts{text-align:center;font:13px "Courier New",monospace;opacity:.75;margin-bottom:8px}
+  .parts b.p{color:var(--pre)} .parts b.c{color:var(--core)} .parts b.s{color:var(--suf)}
+  .out{background:#fbf7ea;border:1px dashed var(--line);border-radius:8px;padding:12px;
+    min-height:120px;font:16px/1.7 "Courier New",monospace;color:#37301f;word-spacing:3px}
+  .out .cited{color:var(--win);border-bottom:1px dotted var(--win)}
+  h2{font-size:17px;margin:22px 0 6px;border-bottom:1px solid var(--line);padding-bottom:3px}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
+  td,th{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+  th{background:#efe6cf}
+  .k{color:var(--pre);font-weight:700}
+  small{opacity:.7}
+  .legend{display:flex;gap:16px;justify-content:center;font-size:12px;margin-top:6px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 40px;font-size:12px;opacity:.6}
+</style>
+</head>
+<body>
+<header>
+  <h1>The Voynich Word-Wheel</h1>
+  <div class="sub">A proof-of-concept for how a 15th-c. scribe could have <em>generated</em> Voynichese &mdash; no language required</div>
+</header>
+
+<main>
+  <!-- ================= THE DEVICE ================= -->
+  <div class="stage">
+    <svg id="wheel" width="440" height="440" viewBox="-220 -220 440 440" aria-label="volvelle"></svg>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--pre)"></i>prefix ring</span>
+      <span><i class="sw" style="background:var(--core)"></i>core ring</span>
+      <span><i class="sw" style="background:var(--suf)"></i>suffix ring</span>
+      <span><i class="sw" style="background:var(--win)"></i>reading window</span>
+    </div>
+  </div>
+
+  <!-- ================= CONTROLS + OUTPUT ================= -->
+  <div class="panel">
+    <div class="stage">
+      <div class="parts" id="parts">spin the rings &rarr; read the window &rarr; one word</div>
+      <div class="word" id="word">&nbsp;</div>
+      <div class="controls" style="justify-content:center">
+        <span class="stepgrp"><b style="color:var(--pre)">prefix</b>
+          <button class="step" data-r="pre" data-d="-1">&#9664;</button>
+          <button class="step" data-r="pre" data-d="1">&#9654;</button></span>
+        <span class="stepgrp"><b style="color:var(--core)">core</b>
+          <button class="step" data-r="core" data-d="-1">&#9664;</button>
+          <button class="step" data-r="core" data-d="1">&#9654;</button></span>
+        <span class="stepgrp"><b style="color:var(--suf)">suffix</b>
+          <button class="step" data-r="suf" data-d="-1">&#9664;</button>
+          <button class="step" data-r="suf" data-d="1">&#9654;</button></span>
+      </div>
+      <div id="lockmsg" style="display:none;text-align:center;color:var(--win);font-size:13px;margin:-4px 0 8px">
+        ✗ the gears don&rsquo;t line up here &mdash; step a ring until a sector lights up</div>
+      <div class="controls">
+        <button id="add">Add word to line &crarr;</button>
+        <button id="spin" class="alt">Random spin</button>
+        <button id="line" class="alt">Write a line</button>
+        <button id="clear" style="background:#a08" >Clear</button>
+        <label class="tog"><input type="checkbox" id="cite" checked> self-citation</label>
+      </div>
+      <div class="out" id="out"></div>
+      <div style="font-size:12px;opacity:.7;margin-top:6px">
+        Red, dotted words are <b style="color:var(--win)">copied</b> from a nearby word (the human habit), not freshly spun.
+      </div>
+    </div>
+
+    <h2>How it works</h2>
+    <p>Three concentric disks turn on one pin. A radial <b>window</b> at the top exposes one
+    sector of each ring; read them outer&rarr;inner and you get a word:
+    <b class="k">prefix + core + suffix</b>. The rings are <b>geared</b>: the prefix you land on
+    only lets certain core sectors line up under the window, and the core only lets certain
+    suffixes line up (dimmed sectors are locked out). Occasionally the scribe doesn&rsquo;t spin
+    at all &mdash; they glance at a nearby word and copy it with a small change.</p>
+  </div>
+
+  <!-- ================= WHY THIS SHAPE ================= -->
+  <div class="panel">
+    <h2>Why this exact design (it&rsquo;s forced by the data)</h2>
+    <table>
+      <tr><th>Measured in the manuscript</th><th>Feature of the device</th></tr>
+      <tr><td>Words = fixed prefix&middot;core&middot;suffix shape; a tiny inventory covers the corpus</td>
+          <td>Three rings with ~10 sectors each</td></tr>
+      <tr><td><b class="k">Binomial word length</b> (variance/mean &lt; 1; natural languages are &gt; 1)</td>
+          <td>Core ring read 0&ndash;2 times &rarr; a few independent draws &rarr; binomial length</td></tr>
+      <tr><td>All <b class="k">5 scribes</b> share the same statistics &amp; affix inventory</td>
+          <td>They each held a copy of the same wheel</td></tr>
+      <tr><td>Currier &ldquo;languages&rdquo; A/B, per-scribe differences</td>
+          <td>A different disk, or a favoured set of sectors</td></tr>
+      <tr><td><b class="k">Very low conditional entropy</b> &mdash; the next character is almost
+          determined by the previous one (sequential, <em>not</em> positional)</td>
+          <td><b>Geared</b> rings: each ring constrains the next. A free grille (independent
+          windows) over-produces &mdash; our simulation shows its entropy is far too high</td></tr>
+      <tr><td>Extra <b class="k">repeated / near-repeated words</b> (self-citation) beyond what
+          any independent generator makes</td>
+          <td>Not the device &mdash; the human copying a neighbouring word (toggle above)</td></tr>
+    </table>
+    <p><small>The <b>geared</b> requirement is the key result: a plain Cardan-grille-over-a-table
+    (independent windows) reproduces word length and the affix list but emits character
+    combinations the manuscript never uses. Coupling the rings fixes it. Medieval combinatorial
+    wheels &mdash; Ramon Llull&rsquo;s <i>Ars Magna</i> &mdash; were exactly such geared concentric
+    disks, and the manuscript itself draws volvelles (the rosette pages).</small></p>
+    <p><small>This page is a <b>concept demo</b> with hand-set rings for legibility. The
+    quantitative version (rings learned from the corpus, matched against the real text) is
+    <code>volvelle.ts</code> / <code>generate.ts</code>; see the repository README.</small></p>
+
+    <h2>Download synthetic corpora</h2>
+    <p>Machine-generated Voynich-like text (200k words each) for your own analysis &mdash;
+    synthetic, not the manuscript:</p>
+    <ul>
+      <li><a href="corpus/voynich-like-markov.txt" download>voynich-like-markov.txt</a>
+        &mdash; order-3 Markov + self-citation (matches the real statistics)</li>
+      <li><a href="corpus/voynich-like-volvelle.txt" download>voynich-like-volvelle.txt</a>
+        &mdash; independent-ring volvelle (deliberately the weaker model)</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  Proof of concept accompanying the computational re-analysis of Beinecke MS 408. Two mechanisms &mdash;
+  a geared character-transition wheel plus occasional self-citation &mdash; reproduce the full
+  statistical profile of Voynichese without any linguistic content.
+</footer>
+
+<script>
+// ---- ring inventories (hand-set from the corpus's top affixes, for a readable demo) ----
+const PRE  = [ {t:'qo',w:8},{t:'ch',w:10},{t:'sh',w:5},{t:'o',w:5},{t:'ok',w:4},
+               {t:'ot',w:4},{t:'da',w:4},{t:'y',w:3},{t:'k',w:2},{t:'∅',w:6} ];
+const CORE = [ {t:'ee'},{t:'e'},{t:'eo'},{t:'ke'},{t:'te'},{t:'ed'},{t:'ai'},{t:'o'},{t:'ch'},{t:'∅'} ];
+const SUF  = [ {t:'dy'},{t:'y'},{t:'in'},{t:'iin'},{t:'aiin'},{t:'ol'},{t:'or'},{t:'al'},{t:'ar'},{t:'edy'},{t:'am'},{t:'∅'} ];
+
+// ---- the GEARS: which sectors a given choice unlocks on the next ring ----
+const GALLOWS = new Set(['qo','ok','ot','k']);      // "gallows"-type prefixes
+function coresFor(pre){
+  if (GALLOWS.has(pre.t)) return ['ee','e','ke','te','ed','o','∅'];
+  if (pre.t==='ch'||pre.t==='sh') return ['ee','e','eo','ed','o','ai','∅'];
+  return ['ke','te','ee','e','o','ai','ch','∅'];
+}
+function sufsFor(core){
+  if (core==='ai'||core==='o') return ['in','iin','aiin','ol','or','ar','y'];
+  if (core==='ee'||core==='e'||core==='ed') return ['dy','edy','y','ol','ar','al','am'];
+  return ['dy','y','ol','or','al','ar','in','∅'];
+}
+const clean = t => t==='∅' ? '' : t;
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+function wpick(items){ // weighted (default weight 1)
+  const tot = items.reduce((s,x)=>s+(x.w||1),0); let r=Math.random()*tot;
+  for(const x of items){ r-=(x.w||1); if(r<0) return x; } return items[0];
+}
+
+// ---- draw the three rings ----
+const NS='http://www.w3.org/2000/svg', wheel=document.getElementById('wheel');
+const RINGS=[{items:PRE,r:190,color:'var(--pre)',id:'ring-pre'},
+             {items:CORE,r:140,color:'var(--core)',id:'ring-core'},
+             {items:SUF,r:92,color:'var(--suf)',id:'ring-suf'}];
+function el(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+// window wedge at the top + guide lines
+wheel.appendChild(el('circle',{r:205,fill:'none',stroke:'var(--line)','stroke-width':1}));
+const win=el('path',{d:`M0 0 L -26 -212 A 214 214 0 0 1 26 -212 Z`,fill:'var(--win)','fill-opacity':.12,stroke:'var(--win)','stroke-dasharray':'4 3'});
+wheel.appendChild(win);
+RINGS.forEach(R=>{
+  wheel.appendChild(el('circle',{r:R.r+22,fill:'none',stroke:R.color,'stroke-opacity':.25,'stroke-width':1}));
+  const g=el('g',{id:R.id}); g.style.transition='transform 1.1s cubic-bezier(.2,.8,.2,1)';
+  R.items.forEach((it,i)=>{
+    const a=(i/R.items.length)*2*Math.PI - Math.PI/2; // item 0 at top
+    const x=Math.cos(a)*R.r, y=Math.sin(a)*R.r;
+    const t=el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central',
+      class:'sector',fill:R.color,'data-i':i}); t.textContent=it.t;
+    g.appendChild(t);
+  });
+  wheel.appendChild(g);
+});
+wheel.appendChild(el('circle',{r:9,fill:'var(--ink)'})); // center pin
+wheel.appendChild(el('text',{x:0,y:-214,'text-anchor':'middle',class:'ringlabel',fill:'var(--win)'})).textContent='▲ read';
+
+// absolute rotation of a ring group, glyphs counter-rotated to stay upright
+const spins={};
+function applyRot(id,deg){
+  document.getElementById(id).style.transform=`rotate(${deg}deg)`;
+  const g=document.getElementById(id);
+  [...g.querySelectorAll('text')].forEach(t=>t.setAttribute('transform',`rotate(${-deg} ${t.getAttribute('x')} ${t.getAttribute('y')})`));
+}
+// bring item index j to the window; `extra` adds whole spins for a flourish
+function showAt(id,items,j,extra=0){
+  const step=360/items.length, targetMod=((360-j*step)%360+360)%360;
+  const cur=spins[id]||0, k=Math.round((cur-targetMod)/360);
+  spins[id]=targetMod+360*k+extra;
+  applyRot(id,spins[id]);
+}
+function dim(id,items,allowed){
+  const g=document.getElementById(id);
+  [...g.querySelectorAll('text')].forEach((t,i)=>t.classList.toggle('dim',!allowed.includes(items[i].t)));
+}
+
+// ---- device state: which sector of each ring is currently under the window ----
+const pos={pre:0,core:0,suf:0};
+let recent=[];
+
+function updateWord(){
+  const p=PRE[pos.pre], c=CORE[pos.core], s=SUF[pos.suf];
+  const okC=coresFor(p), okS=sufsFor(c.t);
+  dim('ring-core',CORE,okC); dim('ring-suf',SUF,okS);
+  const locked=!okC.includes(c.t) || !okS.includes(s.t);
+  const word=clean(p.t)+clean(c.t)+clean(s.t) || '∅';
+  document.getElementById('parts').innerHTML=`<b class="p">${p.t}</b> &middot; <b class="c">${c.t}</b> &middot; <b class="s">${s.t}</b>`;
+  const wEl=document.getElementById('word'); wEl.textContent=word; wEl.style.opacity=locked?.3:1;
+  document.getElementById('lockmsg').style.display=locked?'block':'none';
+  document.getElementById('add').disabled=locked;
+  return {word,locked};
+}
+// step one ring by one letter
+function step(r,d){
+  const items=r==='pre'?PRE:r==='core'?CORE:SUF;
+  pos[r]=(pos[r]+d+items.length)%items.length;
+  showAt('ring-'+r,items,pos[r]);
+  updateWord();
+}
+document.querySelectorAll('.step').forEach(b=>b.onclick=()=>step(b.dataset.r,+b.dataset.d));
+
+// random spin obeys the gears (picks only allowed sectors)
+function randomSpin(){
+  const p=wpick(PRE); pos.pre=PRE.indexOf(p);
+  const c=pick(coresFor(p)); pos.core=CORE.findIndex(x=>x.t===c);
+  const s=pick(sufsFor(c)); pos.suf=SUF.findIndex(x=>x.t===s);
+  showAt('ring-pre',PRE,pos.pre,720); showAt('ring-core',CORE,pos.core,720); showAt('ring-suf',SUF,pos.suf,720);
+  return updateWord();
+}
+
+const out=document.getElementById('out');
+function addWord(w,cited){
+  recent.push(w); if(recent.length>40)recent.shift();
+  const s=document.createElement('span'); s.textContent=w+' '; if(cited)s.className='cited'; out.appendChild(s);
+}
+document.getElementById('add').onclick=()=>{const w=document.getElementById('word').textContent; if(w&&w!=='∅')addWord(w,false);};
+document.getElementById('spin').onclick=()=>{const r=randomSpin(); if(!r.locked)addWord(r.word,false);};
+document.getElementById('line').onclick=async()=>{
+  for(let i=0;i<12;i++){
+    if(document.getElementById('cite').checked && recent.length>3 && Math.random()<0.15){
+      let w=pick(recent.slice(-8));
+      if(Math.random()<0.6 && w.length>2){const k=Math.floor(Math.random()*w.length);w=w.slice(0,k)+clean(pick(SUF).t||pick(CORE).t)+w.slice(k+1);}
+      addWord(w,true);
+    } else { const r=randomSpin(); await new Promise(z=>setTimeout(z,150)); addWord(r.word,false); }
+  }
+  out.appendChild(document.createElement('br'));
+};
+document.getElementById('clear').onclick=()=>{out.innerHTML='';recent=[];};
+updateWord(); // show the initial window word
+</script>
+</body>
+</html>

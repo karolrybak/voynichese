@@ -23,6 +23,7 @@ const show = Number(args.find((a) => a.startsWith("--show="))?.split("=")[1] ?? 
 // with prob REPEAT just repeat the previous word verbatim, else generate with Markov.
 const CITE = Number(args.find((a) => a.startsWith("--cite="))?.split("=")[1] ?? 0)
 const REPEAT = Number(args.find((a) => a.startsWith("--repeat="))?.split("=")[1] ?? 0)
+const dumpPath = args.find((a) => a.startsWith("--dump="))?.split("=")[1]
 const K = 25
 
 const zl = await loadZL()
@@ -32,6 +33,10 @@ for (const f of zl.values()) {
 	if (hand && f.vars["H"] !== hand) continue
 	real.push(...f.words)
 }
+
+// alphabet of the real corpus
+const alpha = [...new Set(real.join("").split(""))].filter((c) => c !== " ").sort()
+console.log(`alphabet: ${alpha.length} distinct EVA characters: ${alpha.join(" ")}`)
 
 // ---------- train order-k char Markov over words (^ pad, $ end) ----------
 const PAD = "^".repeat(order)
@@ -74,8 +79,9 @@ function mutate(w: string): string {
 	const cut = 1 + Math.floor(Math.random() * (w.length - 1))
 	return genWord(w.slice(0, cut))
 }
+const NGEN = Number(args.find((a) => a.startsWith("--n="))?.split("=")[1]) || real.length
 const gen: string[] = []
-for (let n = 0; n < real.length; n++) {
+for (let n = 0; n < NGEN; n++) {
 	let w: string
 	const recent = gen.slice(-K)
 	if (REPEAT > 0 && gen.length && Math.random() < REPEAT) {
@@ -223,4 +229,12 @@ if (show > 0) {
 			.filter(Boolean)
 			.join(" "),
 	)
+}
+
+if (dumpPath) {
+	// wrap ~12 words per line, like manuscript lines
+	const lines: string[] = []
+	for (let i = 0; i < gen.length; i += 12) lines.push(gen.slice(i, i + 12).join(" "))
+	await Bun.write(dumpPath, lines.join("\n") + "\n")
+	console.log(`\ndumped ${gen.length} generated words → ${dumpPath}`)
 }
