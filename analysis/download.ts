@@ -2,16 +2,16 @@
  * Download the Voynich page images from the Beinecke IIIF manifest, named by folio label.
  * The filename IS the folio→image mapping — no separate alignment step needed.
  *
- *   bun run download.ts                 # all canvases → ../iiif/<slug>.jpg + folio_map.json
- *   IIIF_WIDTH=full bun run download.ts # native resolution (default: 2000px wide)
- *   SKIP_BINDING=1 bun run download.ts  # skip covers/flyleaves/edges, folios only
+ *   node download.ts                 # all canvases → ../iiif/<slug>.jpg + folio_map.json
+ *   IIIF_WIDTH=full node download.ts # native resolution (default: 2000px wide)
+ *   SKIP_BINDING=1 node download.ts  # skip covers/flyleaves/edges, folios only
  *
  * Resumable: existing files are skipped.
  */
-import { mkdir, writeFile, readdir } from "node:fs/promises"
+import { mkdir, writeFile, readFile, readdir } from "node:fs/promises"
 import { join, dirname } from "node:path"
 
-const HERE = dirname(Bun.fileURLToPath(import.meta.url))
+const HERE = import.meta.dirname
 const MANIFEST = join(HERE, "..", "ivtff", "manifest.json")
 const OUT_DIR = join(HERE, "..", "iiif")
 // IIIF size. Default is a fit-box "!w,h" (preserve aspect, fit within) — keeps the Qwen-VL
@@ -21,7 +21,7 @@ const SIZE = process.env["IIIF_SIZE"] ?? "!1200,1600"
 const SKIP_BINDING = process.env["SKIP_BINDING"] === "1"
 const CONCURRENCY = 6
 
-const manifest = JSON.parse(await Bun.file(MANIFEST).text())
+const manifest = JSON.parse(await readFile(MANIFEST, "utf8"))
 const canvases: any[] = manifest.items ?? []
 
 const labelOf = (c: any): string => {
@@ -77,7 +77,7 @@ async function worker(queue: Job[]) {
 		try {
 			const res = await fetch(job.url)
 			if (!res.ok) throw new Error(`HTTP ${res.status}`)
-			await Bun.write(join(OUT_DIR, job.file), res)
+			await writeFile(join(OUT_DIR, job.file), Buffer.from(await res.arrayBuffer()))
 			done++
 			console.log(`ok   [${done}/${jobs.length}] ${job.file}  (${job.label})`)
 		} catch (e) {

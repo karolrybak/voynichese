@@ -6,7 +6,7 @@
  *     findings must not be an artefact of the EVA alphabet;
  *   - three natural languages (Latin, German, English) — calibration: real reference values.
  *
- *   bun run compare.ts
+ *   node compare.ts
  *
  * Key discriminators: H1−H2 "drop" (rigid sub-word structure → big drop), word-length
  * var/mean (<1 binomial/under-dispersed = generated; >1 = natural), and self-citation lift
@@ -17,7 +17,7 @@ import { join, dirname } from "node:path"
 import { loadIVTFF } from "./zl.ts"
 import { condEntropy, lengthStats, selfCite, shuffled, repeatRate, zipf } from "./metrics.ts"
 
-const HERE = dirname(Bun.fileURLToPath(import.meta.url))
+const HERE = import.meta.dirname
 const ivtff = (f: string) => join(HERE, "..", "ivtff", f)
 const ref = (f: string) => join(HERE, "..", "ref", f)
 

@@ -15,6 +15,11 @@ natural-language control corpora** (Latin, German, English) under identical code
 simplest explanation consistent with all results is that the text was produced by a cheap,
 meaning-free procedure shared by the scribes.
 
+**▶ Interactive demo: <https://karolrybak.github.io/voynichese/>** — a working proof-of-concept
+of the generating device (a geared "word-wheel" you can turn one letter at a time), plus two
+downloadable synthetic corpora ([Markov](https://karolrybak.github.io/voynichese/corpus/voynich-like-markov.txt)
+· [volvelle](https://karolrybak.github.io/voynichese/corpus/voynich-like-volvelle.txt), 200k words each).
+
 ---
 
 ## 1. Question
@@ -181,13 +186,17 @@ that the signature is **invariant across all of Davis's scribal hands**.
 
 ## 10. Reproduce
 
+Runs on Node ≥ 24 (native TypeScript, global `fetch`/`WebSocket`); no Bun required.
+From `analysis/` (`npm install` first for `arktype` + photon):
+
 ```bash
-bun run zl.ts                                   # corpus + hand/section/Currier breakdown
-bun run correlate.ts --section=all --perm=500   # Result 1 (image↔text null)
-bun run textstats.ts                            # Result 2 (signatures by hand & Currier)
-bun run wordstruct.ts                           # Result 3 (affix table, positional entropy)
-bun run compare.ts                              # §7 (calibration vs Latin/German/English; 3 transliterations)
-bun run generate.ts --order=3 --cite=0.15 --show=30   # Result 4 (reproduce Voynichese)
+node zl.ts                                   # corpus + hand/section/Currier breakdown
+node correlate.ts --section=all --perm=500   # Result 1 (image↔text null)
+node textstats.ts                            # Result 2 (signatures by hand & Currier)
+node wordstruct.ts                           # Result 3 (affix table, positional entropy)
+node compare.ts                              # §7 (calibration vs Latin/German/English; 3 transliterations)
+node generate.ts --order=3 --cite=0.15 --show=30   # Result 4 (reproduce Voynichese)
+node volvelle.ts                             # §5 device sim (independent rings insufficient → geared)
 ```
 
 *Data: Beinecke MS 408 (Yale, IIIF) and the Zandbergen–Landini transliteration

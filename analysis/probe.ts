@@ -2,15 +2,15 @@
  * Schema-free probe: send a prompt + image to qwen3-vl-8b and print the RAW text output.
  * Use it to see what shape the model returns on its own, before designing a schema.
  *
- *   bun run probe.ts prompt_keywords.md f1v f67r
- *   bun run probe.ts prompt_generic.md f1v
+ *   node probe.ts prompt_keywords.md f1v f67r
+ *   node probe.ts prompt_generic.md f1v
  */
 import { readFile } from "node:fs/promises"
 import { join, dirname } from "node:path"
 import { PhotonImage, resize, SamplingFilter } from "@silvia-odwyer/photon-node"
 import { keywordsJsonSchema, regionsJsonSchema } from "./schema.ts"
 
-const HERE = dirname(Bun.fileURLToPath(import.meta.url))
+const HERE = import.meta.dirname
 const IIIF_DIR = join(HERE, "..", "iiif")
 const URL = process.env["DYFUZOR_URL"] ?? "ws://localhost:8787"
 const MODEL = "qwen3-vl-8b"
@@ -22,7 +22,7 @@ const schema =
 	schemaName === "keywords" ? keywordsJsonSchema : schemaName === "regions" ? regionsJsonSchema : undefined
 const positional = args.filter((a) => !a.startsWith("--"))
 const [promptFile, ...folioArgs] = positional
-if (!promptFile) throw new Error("usage: bun run probe.ts [--schema=keywords|regions] <promptFile> <folio...>")
+if (!promptFile) throw new Error("usage: node probe.ts [--schema=keywords|regions] <promptFile> <folio...>")
 const prompt = await readFile(join(HERE, promptFile), "utf8")
 const folios = (folioArgs.length ? folioArgs : ["f1v"]).map((f) => (f.startsWith("f") ? f : `f${f}`))
 

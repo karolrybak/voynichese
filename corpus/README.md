@@ -15,8 +15,8 @@ manuscript lines). Tokenize on whitespace.
 **How they were made** (from `../analysis/`):
 
 ```bash
-bun run generate.ts --order=3 --cite=0.15 --n=200000 --dump=../corpus/voynich-like-markov.txt
-bun run volvelle.ts --n=200000 --dump=../corpus/voynich-like-volvelle.txt
+node generate.ts --order=3 --cite=0.15 --n=200000 --dump=../corpus/voynich-like-markov.txt
+node volvelle.ts --n=200000 --dump=../corpus/voynich-like-volvelle.txt
 ```
 
 **Why they exist.** The whole point of the project is that Voynichese is reproducible by a

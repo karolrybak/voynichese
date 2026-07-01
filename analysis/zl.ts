@@ -10,9 +10,10 @@
  * readings (we keep the first), {...} ligature groups, @NNN; special-char codes, and the
  * uncertainty markers ? * ! , (comma = uncertain space).
  */
-import { join, dirname } from "node:path"
+import { readFile } from "node:fs/promises"
+import { join } from "node:path"
 
-const HERE = dirname(Bun.fileURLToPath(import.meta.url))
+const HERE = import.meta.dirname
 const ZL_PATH = join(HERE, "..", "ivtff", "ZL3b-n.txt")
 
 export interface Folio {
@@ -92,12 +93,12 @@ export function parseZL(content: string): Map<string, Folio> {
 }
 
 export async function loadZL(): Promise<Map<string, Folio>> {
-	return parseZL(await Bun.file(ZL_PATH).text())
+	return parseZL(await readFile(ZL_PATH, "utf8"))
 }
 
 /** Parse any IVTFF-format transliteration (e.g. ivtff/IT2a-n.txt, ivtff/GC2a-n.txt). */
 export async function loadIVTFF(path: string): Promise<Map<string, Folio>> {
-	return parseZL(await Bun.file(path).text())
+	return parseZL(await readFile(path, "utf8"))
 }
 
 if (import.meta.main) {

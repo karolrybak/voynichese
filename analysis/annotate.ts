@@ -4,11 +4,11 @@
  * ($I) from the ZL transliteration, drives qwen3-vl-8b with the matching per-section schema,
  * and saves the parsed feature vector to `out/<folio>.json`. Resumable (skips done).
  *
- *   bun run annotate.ts                       # every folio, per-section by $I
- *   bun run annotate.ts --section=herbal      # only one section
- *   bun run annotate.ts --limit=8 --sample    # one folio per section (quick check)
- *   bun run annotate.ts f1r f3r 75r           # explicit folios
- *   DYFUZOR_URL=ws://host:8787 bun run annotate.ts
+ *   node annotate.ts                       # every folio, per-section by $I
+ *   node annotate.ts --section=herbal      # only one section
+ *   node annotate.ts --limit=8 --sample    # one folio per section (quick check)
+ *   node annotate.ts f1r f3r 75r           # explicit folios
+ *   DYFUZOR_URL=ws://host:8787 node annotate.ts
  */
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises"
 import { join, dirname } from "node:path"
@@ -33,7 +33,7 @@ function fitJpeg(bytes: Uint8Array): Uint8Array {
 	return out
 }
 
-const HERE = dirname(Bun.fileURLToPath(import.meta.url))
+const HERE = import.meta.dirname
 const IIIF_DIR = join(HERE, "..", "iiif")
 const OUT_DIR = join(HERE, "out")
 const URL = process.env["DYFUZOR_URL"] ?? "ws://localhost:8787"

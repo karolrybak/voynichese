@@ -3,8 +3,8 @@
  * Computes the canonical discriminators on the ZL EVA corpus and compares Currier A vs B
  * vs a shuffled control. No images involved — pure text, full 37k-word corpus.
  *
- *   bun run textstats.ts                # all folios, split by Currier language
- *   bun run textstats.ts --section=herbal
+ *   node textstats.ts                # all folios, split by Currier language
+ *   node textstats.ts --section=herbal
  *
  * Tests:
  *  1. Character conditional entropy h1/h2/h3 (bits/char). Natural langs ~h2 3–3.5; Voynich

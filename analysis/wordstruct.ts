@@ -2,8 +2,8 @@
  * Word-structure / slot-grammar analysis — characterize the *generator*, and test whether
  * all 5 LFD scribal hands share the SAME word template (= a common "table"/method).
  *
- *   bun run wordstruct.ts                 # all + per hand
- *   bun run wordstruct.ts --section=herbal
+ *   node wordstruct.ts                 # all + per hand
+ *   node wordstruct.ts --section=herbal
  *
  * Reports per group:
  *  - positional char entropy H(char | index-in-word): if ≈ the H2 from textstats, the

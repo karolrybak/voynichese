@@ -6,10 +6,10 @@
  * Currier), so a surviving hit means "folios that look like X use token Y *beyond* what the
  * section already explains".
  *
- *   bun run correlate.ts                                   # herbal, structured features, words
- *   bun run correlate.ts --section=all --perm=500          # every section
- *   bun run correlate.ts --section=biological --unit=char3
- *   bun run correlate.ts --vf=keywords --loctype=L --unit=char3 --minDF=3 --minVF=3
+ *   node correlate.ts                                   # herbal, structured features, words
+ *   node correlate.ts --section=all --perm=500          # every section
+ *   node correlate.ts --section=biological --unit=char3
+ *   node correlate.ts --vf=keywords --loctype=L --unit=char3 --minDF=3 --minVF=3
  *
  * Flags:
  *   --section=NAME|all   which section(s)            (default herbal)
@@ -31,7 +31,7 @@ import { readFile, readdir } from "node:fs/promises"
 import { join, dirname } from "node:path"
 import { loadZL, type Folio } from "./zl.ts"
 
-const HERE = dirname(Bun.fileURLToPath(import.meta.url))
+const HERE = import.meta.dirname
 const OUT_DIR = join(HERE, "out")
 
 const args = process.argv.slice(2)

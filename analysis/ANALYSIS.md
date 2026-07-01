@@ -28,11 +28,11 @@ Zandbergen-Landini), serwer Qwen na `ws://localhost:8787` (model `qwen3-vl-8b`).
 ## Jak uruchamiać `correlate.ts`
 
 ```bash
-bun run correlate.ts                                  # herbal, cechy strukturalne, słowa
-bun run correlate.ts --section=all --perm=500         # wszystkie sekcje
-bun run correlate.ts --section=biological --unit=char3 --perm=500
-bun run correlate.ts --vf=keywords --unit=char3 --minDF=3 --minVF=3
-bun run correlate.ts --loctype=L --unit=char3 --minDF=3   # tylko etykiety
+node correlate.ts                                  # herbal, cechy strukturalne, słowa
+node correlate.ts --section=all --perm=500         # wszystkie sekcje
+node correlate.ts --section=biological --unit=char3 --perm=500
+node correlate.ts --vf=keywords --unit=char3 --minDF=3 --minVF=3
+node correlate.ts --loctype=L --unit=char3 --minDF=3   # tylko etykiety
 ```
 
 ### Flagi

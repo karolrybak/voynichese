@@ -6,13 +6,14 @@
  *   - VOLVELLE: learn a prefix ring, a core ring, a suffix ring; assemble a word by drawing
  *     each ring INDEPENDENTLY (positional, no memory between rings = a physical grille/wheel)
  *
- *   bun run volvelle.ts            # comparison table + sample volvelle words
- *   bun run volvelle.ts --dump=volvelle_out.txt
+ *   node volvelle.ts            # comparison table + sample volvelle words
+ *   node volvelle.ts --dump=volvelle_out.txt
  *
  * If VOLVELLE matches on word length / affix inventory but its char entropy H2 is too HIGH,
  * that means independent slots allow character transitions the real text forbids → the real
  * device needs *coupled* rings (geared wheels), i.e. structure is sequential not merely slotted.
  */
+import { writeFile } from "node:fs/promises"
 import { loadZL } from "./zl.ts"
 import { condEntropy, lengthStats, selfCite, shuffled, repeatRate, zipf, affixProfile } from "./metrics.ts"
 
@@ -157,6 +158,6 @@ console.log("\n25 volvelle words:", Array.from({ length: 25 }, volvelleWord).joi
 if (dumpPath) {
 	const lines: string[] = []
 	for (let i = 0; i < volvelle.length; i += 12) lines.push(volvelle.slice(i, i + 12).join(" "))
-	await Bun.write(dumpPath, lines.join("\n") + "\n")
+	await writeFile(dumpPath, lines.join("\n") + "\n")
 	console.log(`\ndumped ${volvelle.length} volvelle words → ${dumpPath}`)
 }

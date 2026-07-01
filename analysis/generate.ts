@@ -5,13 +5,14 @@
  * Zipf, then the manuscript text is reproducible by a cheap generator — concrete support
  * for "procedurally generated".
  *
- *   bun run generate.ts                 # order 3, whole corpus
- *   bun run generate.ts --order=2
- *   bun run generate.ts --hand=2        # train/compare on one scribe
- *   bun run generate.ts --section=herbal --show=20   # also print 20 sample words
+ *   node generate.ts                 # order 3, whole corpus
+ *   node generate.ts --order=2
+ *   node generate.ts --hand=2        # train/compare on one scribe
+ *   node generate.ts --section=herbal --show=20   # also print 20 sample words
  *
  * NB sampling uses Math.random (fine in a normal script). Each run differs slightly.
  */
+import { writeFile } from "node:fs/promises"
 import { loadZL } from "./zl.ts"
 
 const args = process.argv.slice(2)
@@ -235,6 +236,6 @@ if (dumpPath) {
 	// wrap ~12 words per line, like manuscript lines
 	const lines: string[] = []
 	for (let i = 0; i < gen.length; i += 12) lines.push(gen.slice(i, i + 12).join(" "))
-	await Bun.write(dumpPath, lines.join("\n") + "\n")
+	await writeFile(dumpPath, lines.join("\n") + "\n")
 	console.log(`\ndumped ${gen.length} generated words → ${dumpPath}`)
 }
